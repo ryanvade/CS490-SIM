@@ -19,6 +19,8 @@ public class Matrix {
 
     public Matrix(int rows, int columns, double val) {
         this.mat = new double[rows][columns];
+        this.rows = rows;
+        this.columns = columns;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
                 this.mat[i][j] = val;
@@ -53,6 +55,15 @@ public class Matrix {
         }
 
         return this.mat[x][y];
+    }
+
+    public void setAt(int x, int y, double val)
+    {
+        if(x < 0 || x > this.rows || y < 0 || y > this.columns)
+        {
+            throw new IllegalArgumentException("Invalid index passed to at");
+        }
+        this.mat[x][y] = val;
     }
 
     private boolean isSquare()
@@ -174,7 +185,7 @@ public class Matrix {
     {
         if(this.columns != m.getRows())
         {
-            throw new IllegalArgumentException("Columns does not equals rows");
+            throw new IllegalArgumentException("Columns does not equals rows " + this.columns + " " + m.getRows());
         }
         double res[][] = new double[this.rows][m.getColumns()];
         for (int i = 0; i < this.rows; i++)
@@ -204,7 +215,7 @@ public class Matrix {
             return new Matrix(1, 1, 1.0);
         }
 
-        Matrix y = new Matrix(this.rows, this.columns, 1.0);
+        Matrix y = Matrix.identity(this.rows);
         while(n > 1) {
             if(n % 2 == 0)
             {
@@ -213,10 +224,65 @@ public class Matrix {
             }else
             {
                 y = x.mult(y);
-                x = x.mult(x);
-                n = (n - 1) / 2;
+                n--;
             }
         }
         return x.mult(y);
+    }
+
+    public double[] getRow(int rowID)
+    {
+        if(rowID < 0 || rowID > this.rows)
+        {
+            throw new IllegalArgumentException("Invalid row index");
+        }
+        double[] row = new double[this.columns];
+        for (int i = 0; i < this.columns; i++)
+        {
+            row[i] = this.mat[rowID][i];
+        }
+        return row;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < this.rows; i++)
+        {
+            for (int j = 0; j < this.columns; j++)
+            {
+                builder.append(String.valueOf(this.at(i, j)) + ", ");
+            }
+            builder.append('\n');
+        }
+        return builder.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null)
+        {
+            return false;
+        }
+        if (!Matrix.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+        final Matrix B = (Matrix)obj;
+        // check column and row counts
+        if(this.rows != B.getRows() || this.columns != B.getColumns())
+        {
+            return false;
+        }
+        for (int i = 0; i < this.rows; i++)
+        {
+            for (int j = 0; j < this.columns; j++)
+            {
+                if(this.at(i, j) != B.at(i, j))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
