@@ -1,3 +1,15 @@
+/*
+ * Matrix.java
+ *
+ * Matrix class for use with the MarkovChain class.
+ *
+ * Note: I noticed after creating most of this class that the math functions are not actually
+ * needed as I initially thought. Oh well, more matrix math practice I suppose.
+ *
+ * By Ryan Owens
+ *
+ * Date: 10/14/2017
+ */
 package Matrix;
 
 import java.security.InvalidParameterException;

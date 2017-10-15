@@ -1,3 +1,12 @@
+/*
+ * MarkovChain.java
+ *
+ * Markov chain for simulation.
+ *
+ * By Ryan Owens
+ *
+ * Date: 10/14/2017
+ */
 package MarkovChain;
 
 import java.util.Random;
@@ -11,6 +20,8 @@ public class MarkovChain {
     private char[] states;
     private Matrix probabilityMatrix;
     private Random rand;
+    private char initialState;
+    private Vector visitedStates;
 
     public MarkovChain(char[] states,Matrix probabilityMatrix)
     {
@@ -19,19 +30,29 @@ public class MarkovChain {
         this.rand = new Random(System.currentTimeMillis());
     }
 
+    public char getInitialState()
+    {
+        return this.initialState;
+    }
+
+    public Vector getVisitedStates() {
+        return this.visitedStates;
+    }
+
     public Matrix walk(int initialState, int walkSteps)
     {
         Matrix timeMatrix = new Matrix(this.probabilityMatrix.getRows(), walkSteps + 1, 0.0);
         Vector visitedStates = new Vector();
         if(initialState < 0)
         {
-            initialState = this.rand.nextInt((this.states.length - 0) + 1) + 0;
+            initialState = this.rand.nextInt(this.states.length - 1);
         }
         timeMatrix.setAt(initialState, 0, 1.0);
         visitedStates.add(initialState);
         int currentState = initialState;
         double[] currentRow;
         System.out.println("Initial State: " + this.states[currentState]);
+        this.initialState = this.states[currentState];
         for(int i = 0; i < walkSteps; i++)
         {
             // get the row for the current state
@@ -43,6 +64,7 @@ public class MarkovChain {
             // calculate new timeMatrix values
             this.updateTimeMatrix(timeMatrix, visitedStates);
         }
+        this.visitedStates = visitedStates;
         return timeMatrix;
     }
 
@@ -79,12 +101,12 @@ public class MarkovChain {
         return selected;
     }
 
-    private void updateTimeMatrix(Matrix timeMatrix, Vector vistedStates)
+    private void updateTimeMatrix(Matrix timeMatrix, Vector visitedStates)
     {
-        int length = vistedStates.toArray().length;
+        int length = visitedStates.toArray().length;
         int round = length - 1;
         int[] counts = new int[this.states.length];
-        for (Object state: vistedStates)
+        for (Object state: visitedStates)
         {
             int s = (int)state;
             counts[s] = counts[s] + 1;
