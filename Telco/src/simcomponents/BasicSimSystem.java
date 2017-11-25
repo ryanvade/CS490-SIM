@@ -25,6 +25,8 @@
  */
 package simcomponents;
 
+//import com.sun.corba.se.spi.transport.TransportDefault;
+
 /**
  * A simulation system providing an experimental frame for a simulation engine and
  * simulatable components. The domain of this experimental frame is a queueing network
@@ -42,19 +44,37 @@ public class BasicSimSystem {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        double endSimTime = 10.0;       // max hours to simulate
         
         Long testSeed;                // default random seed
-        testSeed = 543210L;      
-        //testSeed = Long.MIN_VALUE;
+        //testSeed = 543210L;
+        testSeed = Long.MIN_VALUE;
         
-        
+
+        // number of 'days' to work
+        int days = 20;
+        double endSimTime = 8 * days;       // max hours to simulate
         // the defined unit time here is an hour
-        double jobArrivalRate = 4.0;    // average jobs per hour
-        int stationServers1 = 3;
-        int stationServers2 = 1;
-        double serviceRate1 = 0.5;      // average jobs per hour
-        double serviceRate2 = 1.0;      // average jobs per hour
+        double jobArrivalRate = 1.25;    // average jobs per hour
+        jobArrivalRate = jobArrivalRate + (jobArrivalRate * 8);
+        jobArrivalRate = jobArrivalRate + (jobArrivalRate * days); // how many work days?
+        jobArrivalRate = jobArrivalRate + (jobArrivalRate * 0.05); // include percentage of 'return calls'
+        System.out.println("Simulation Work Days: " + days);
+        System.out.println("Job Arrival Rate for Simulation: " + jobArrivalRate);
+
+        int callCenterServers = 3;
+        int softwareTechnicianServers = 2;
+        int softwareManagerServers = 1;
+        int hardwareTechnicianServers = 2;
+        int hardwareManagerServers = 1;
+        int repairTechnicianServers = 2;
+
+        double callCenterServiceRate = 3.0 / 60.0;
+        double softwareTechnicianServiceRate = 20.0 / 60.0 ;
+        double softwareManagerServiceRate = 45.0 / 60.0 ;
+        double hardwareTechnicianServiceRate = 40.0 / 60.0;
+        double hardwareManagerServiceRate = 60.0 / 60.0;
+        double repairTechnicianServiceRate = 0.8;
+
         
         if (args.length > 2) {
             throw new IllegalArgumentException("A maximum of two arguments is allowed.");
@@ -86,29 +106,60 @@ public class BasicSimSystem {
         // Get Generators
         Generator genr = new Generator("Gen_1", jobArrivalRate);
         // Get Queue Stations
-        QueueStation station1 = new QueueStation("Station_1", stationServers1, serviceRate1);
-        QueueStation station2 = new QueueStation("Station_2", stationServers2, serviceRate2);
-        // Get Transducer
+        QueueStation callCenter = new QueueStation("Call_Center", callCenterServers, callCenterServiceRate);
+        QueueStation softwareTechnicians = new QueueStation("Software_Technicians", softwareTechnicianServers, softwareTechnicianServiceRate);
+        QueueStation softwareManagers = new QueueStation("Software_Managers", softwareManagerServers, softwareManagerServiceRate);
+        QueueStation hardwareTechnicians = new QueueStation("Hardware_Technicians", hardwareTechnicianServers, hardwareTechnicianServiceRate);
+        QueueStation hardwareManagers = new QueueStation("Hardware_Managers", hardwareManagerServers, hardwareManagerServiceRate);
+        QueueStation hardwareRepair = new QueueStation("Hardware_Repair", repairTechnicianServers, repairTechnicianServiceRate);
+        // Get Transducers
         Transducer transd = new Transducer();
+        Transducer repairTransd = new Transducer("Hardware_Repair_Transducer");
+        Transducer failRepairTransd = new Transducer("Failed_Hardware_Repair_Transducer");
         
         if (testSeed != Long.MIN_VALUE) {
             genr.setRandomSeed(testSeed);
-            station1.setRandomSeed(testSeed);
-            station2.setRandomSeed(testSeed);
+            callCenter.setRandomSeed(testSeed);
+            softwareTechnicians.setRandomSeed(testSeed);
+            softwareManagers.setRandomSeed(testSeed);
+            hardwareTechnicians.setRandomSeed(testSeed);
+            hardwareManagers.setRandomSeed(testSeed);
+            hardwareRepair.setRandomSeed(testSeed);
         }
         
         // register the simulation engine to monitor component events and connect the components
         genr.register(engine);
-        station1.register(engine);
-        station2.register(engine);
-        
-        // send generator output to station 1
-        // 100% of station 1 output goes to station 2
-        // 20% of station 2 output goes back to station 1; the rest goes to the transducer
-        genr.setQueueStation(station1);
-        station1.addOutputStation(station2, 1.0);
-        station2.addOutputStation(station1, 0.2);
-        station2.addOutputStation(transd, 0.8);
+        callCenter.register(engine);
+        softwareTechnicians.register(engine);
+        softwareManagers.register(engine);
+        hardwareTechnicians.register(engine);
+        hardwareManagers.register(engine);
+        hardwareRepair.register(engine);
+
+        // Set output stations for the queues
+        genr.setQueueStation(callCenter);
+
+        callCenter.addOutputStation(softwareTechnicians, 0.58);
+        callCenter.addOutputStation(hardwareTechnicians, 0.27);
+        callCenter.addOutputStation(transd, 0.15);
+
+        softwareTechnicians.addOutputStation(softwareManagers, 0.30);
+        softwareTechnicians.addOutputStation(hardwareTechnicians, 0.20);
+        softwareTechnicians.addOutputStation(transd, 0.50);
+
+        hardwareTechnicians.addOutputStation(softwareTechnicians, 0.05);
+        hardwareTechnicians.addOutputStation(hardwareManagers, 0.18);
+        hardwareTechnicians.addOutputStation(transd, 0.41);
+        hardwareTechnicians.addOutputStation(hardwareRepair, 0.36);
+
+        softwareManagers.addOutputStation(hardwareTechnicians, 0.20);
+        softwareManagers.addOutputStation(transd, 0.80);
+
+        hardwareManagers.addOutputStation(transd, 0.64);
+        hardwareManagers.addOutputStation(hardwareRepair, 0.36);
+
+        hardwareRepair.addOutputStation(repairTransd, 0.75);
+        hardwareRepair.addOutputStation(failRepairTransd, 0.25);
         
         // run the simulation
         System.out.println("Beginning simulation...\n");

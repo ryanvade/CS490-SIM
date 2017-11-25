@@ -57,7 +57,7 @@ public class SimEngine implements EventObserver {
         // put the simulation event in the event queue
         this.eventQueue.add(simEvent);
         System.out.printf("  Engine: Rec'vd event from " + simEvent.getSimulatable().getName()
-                + " to occur at %.3f%n", eventTime);
+                + " to occur at %.3f, total jobs: %d%n", eventTime, this.eventQueue.size());
     }
     
     public void setEndTime(double endTime) {

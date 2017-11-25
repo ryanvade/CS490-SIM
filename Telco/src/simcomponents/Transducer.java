@@ -35,13 +35,21 @@ package simcomponents;
  */
 public class Transducer extends QueueStation {
 
-    public Transducer() {
+    private int jobCount = 0;
+
+    public Transducer(String name) {
+        super(name, -1, 0.0);
+    }
+
+    public Transducer()
+    {
         super("Transducer", -1, 0.0);
     }
     
     @Override
     public void addJob(Job job) {
-        System.out.printf("  Transducer: Job completed.%n");
+        jobCount++;
+        System.out.printf("  Transducer: Completed " + jobCount + " jobs\n");
     }
     
     @Override

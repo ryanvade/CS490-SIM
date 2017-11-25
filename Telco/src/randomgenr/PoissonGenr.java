@@ -69,20 +69,32 @@ public class PoissonGenr extends RandomVariateGenr {
         int numTests = 0;                   // number of tests
         double probabilityOfEvent = 1.0;  // probability of an event
         int numEvents = 0;                // number events this period
-        
+        int count = 0;
         // acceptance-rejection method
         exp = Math.exp(-this.avgRate);
         
         while (numEvents == 0) {
             RND = rand.nextDouble();
             probabilityOfEvent = probabilityOfEvent*RND;
+//
 
-            if (probabilityOfEvent < exp)
+            if (probabilityOfEvent < exp) {
                 numEvents = numTests;
-            else
+//                if (probabilityOfEvent == 0.0)
+//                {
+//                    probabilityOfEvent = 1.0;
+//                }
+            } else
                 numTests++;
+            count++;
+//            if(count >= 200 && probabilityOfEvent == 0.0 && numEvents == 0)
+//            {
+//                probabilityOfEvent = 1.0;
+//                numEvents++;
+//                count = 0;
+//            }
         }
-        
+
         return numEvents;
     }
     
