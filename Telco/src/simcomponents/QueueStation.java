@@ -25,11 +25,8 @@
  */
 package simcomponents;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Random;
-import java.util.TreeSet;
+import java.util.*;
+
 import randomgenr.ExponentialGenr;
 import randomgenr.GammaGenr;
 import randomgenr.UniformGenr;
@@ -235,6 +232,7 @@ public class QueueStation implements Simulatable {
     public void printJobResults() {
         if(this.finishedJobs.size() > 0)
         System.out.println(this.name + " Finished Jobs");
+        this.finishedJobs.sort(Comparator.comparingInt(o -> (int) o.getStartTime()));
         for(Job j : this.finishedJobs)
         {
             System.out.printf("\tArrival time: %f, Start time: %f, End time: %f%n", j.getArrivalTime(), j.getStartTime(), j.getEndTime());
