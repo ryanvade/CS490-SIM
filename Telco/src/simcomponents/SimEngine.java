@@ -25,6 +25,9 @@
  */
 package simcomponents;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.PriorityQueue;
 
 /**
@@ -38,6 +41,7 @@ public class SimEngine implements EventObserver {
     private double endTime;
     private double simTime;
     private final PriorityQueue<SimEvent> eventQueue;
+    private List<SimEvent> finishedEvents;
     
     public static SimEngine getInstance() {
         
@@ -56,8 +60,11 @@ public class SimEngine implements EventObserver {
         
         // put the simulation event in the event queue
         this.eventQueue.add(simEvent);
-        System.out.printf("  Engine: Rec'vd event from " + simEvent.getSimulatable().getName()
-                + " to occur at %.3f, total jobs: %d%n", eventTime, this.eventQueue.size());
+//        if(simEvent.getSimulatable().getName() != "Gen_1") {
+            System.out.printf("  Engine: Rec'vd event from " + simEvent.getSimulatable().getName()
+                    + " to occur at %.3f, total jobs: %d%n", eventTime, this.eventQueue.size());
+            this.finishedEvents.add(simEvent);
+//        }
     }
     
     public void setEndTime(double endTime) {
@@ -76,11 +83,12 @@ public class SimEngine implements EventObserver {
             if (nextEvent != null) {
                 // update sim time; assumes event time is sim time
                 this.simTime = nextEvent.getEventTime();
-                System.out.printf("Event simulation time: %.3f%n", this.simTime);
+                if(nextEvent.getSimulatable().getName() != "Gen_1")
+                System.out.printf("%nEvent simulation time: %.3f%n", this.simTime);
                 
                 // make the next event happen
                 simulatable = nextEvent.getSimulatable();
-                simulatable.execute();
+                simulatable.execute(this.simTime);
             }
         }
         
@@ -91,6 +99,12 @@ public class SimEngine implements EventObserver {
         this.endTime = 0.0;
         this.simTime = 0.0;
         this.eventQueue = new PriorityQueue<>(10);
+        this.finishedEvents = new LinkedList<SimEvent>();
+    }
+
+    public void printResults()
+    {
+        Collections.sort(this.finishedEvents);
     }
     
 }

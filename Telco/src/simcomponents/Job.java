@@ -34,10 +34,14 @@ package simcomponents;
 public class Job {
     private double startTime;
     private double endTime;
+    private double arrivalTime;
+    private int ID;
     
     public Job() {
         this.startTime = Double.NEGATIVE_INFINITY;
         this.endTime = Double.NEGATIVE_INFINITY;
+        this.arrivalTime = Double.NEGATIVE_INFINITY;
+        this.ID = -1;
     }
     
     public double getEndTime() {
@@ -48,12 +52,17 @@ public class Job {
         return this.startTime;
     }
 
+    public double getArrivalTime() { return this.arrivalTime; }
+
     public void setEndTime(double end) {
         this.endTime = end;
     }
     
     public void setStartTime(double start) {
-        this.startTime = start;
+        if(this.startTime == Double.NEGATIVE_INFINITY) this.startTime = start;
     }
+
+    public void setArrivalTime(double arrival) { this.arrivalTime = arrival;}
+
 
 }

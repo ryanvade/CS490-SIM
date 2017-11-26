@@ -32,7 +32,7 @@ package simcomponents;
  * @author Gary R. Mayer
  */
 public interface Simulatable {
-    void execute();
+    void execute(double simTime);
     String getName();
     void register(EventObserver observer);
     void unregister(EventObserver observer);

@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.TreeSet;
 import randomgenr.ExponentialGenr;
+import randomgenr.GammaGenr;
 import randomgenr.UniformGenr;
 
 /**
@@ -48,6 +49,11 @@ public class QueueStation implements Simulatable {
     private final ArrayList<EventObserver> observers;
 
     private final ExponentialGenr serviceTimeGenr;
+    private final GammaGenr gammaServiceTimeGenr;
+
+    protected LinkedList<Job> finishedJobs = new LinkedList<>();
+
+    private final boolean useGamma;
     
     protected QueueStation(String name, int numServers, double serviceRate) {
         this.name = name;
@@ -57,7 +63,24 @@ public class QueueStation implements Simulatable {
         this.outputStations = new TreeSet<>();
         this.observers = new ArrayList<>(2);
         this.serviceTimeGenr = new ExponentialGenr();
+        this.gammaServiceTimeGenr = new GammaGenr();
         this.serviceTimeGenr.setEventRate(serviceRate);
+        this.useGamma = false;
+
+    }
+
+    protected QueueStation(String name, int numServers, double serviceRate, boolean useGamma) {
+        this.name = name;
+        this.jobQueue = new LinkedList<>();
+        this.numServers = numServers;
+        this.activeServers = new ArrayList<>();
+        this.outputStations = new TreeSet<>();
+        this.observers = new ArrayList<>(2);
+        this.serviceTimeGenr = new ExponentialGenr();
+        this.gammaServiceTimeGenr = new GammaGenr();
+        this.serviceTimeGenr.setEventRate(serviceRate);
+        this.useGamma = useGamma;
+
     }
 
     /**
@@ -66,12 +89,13 @@ public class QueueStation implements Simulatable {
      * 
      * @param job the job to add to the queue station system
      */
-    public void addJob(Job job) {
+    public void addJob(Job job, double simTime) {
+        job.setArrivalTime(simTime);
         this.jobQueue.add(job);
         
         // if a server is not used, start job immediately
         if (this.activeServers.size() < this.numServers) {
-            startNextJob();
+            startNextJob(simTime);
         }
     }
     
@@ -87,18 +111,33 @@ public class QueueStation implements Simulatable {
     }
     
     @Override
-    public void execute() {
-        // remove job from server; as there is no distinction between jobs in
-        //  this example, just take the first
-        Job finishedJob = this.activeServers.remove(0);
-        
-        // send job to selected output station
-        QueueStation outputStation = selectOutputStation();
-        outputStation.addJob(finishedJob);
-        System.out.println("  " + this.name + " sending job to " + outputStation.getName());
+    public void execute(double simTime) {
+        // remove job from server;
+        Job finishedJob = null;
+        for(Job j: this.activeServers){
+            if(j.getEndTime() == simTime)
+            {
+                finishedJob = j;
+                break;
+            }
+        }
+        if(finishedJobs != null)
+        {
+            this.activeServers.remove(this.activeServers.indexOf(finishedJob));
+            this.finishedJobs.push(finishedJob);
 
-        // get next job from queue
-        startNextJob();
+            // send job to selected output station
+            QueueStation outputStation = selectOutputStation();
+            outputStation.addJob(finishedJob, simTime);
+            System.out.println("  " + this.name + " sending job to " + outputStation.getName());
+
+            // get next job from queue
+            startNextJob(simTime);
+        }else
+        {
+            System.out.println("Could not find job with end time: " + simTime);
+        }
+
     }
     
     @Override
@@ -114,6 +153,7 @@ public class QueueStation implements Simulatable {
     public void setRandomSeed(long seed) {
         QueueStation.outSelectGenr.setSeed(seed);
         this.serviceTimeGenr.setSeed(seed);
+        this.gammaServiceTimeGenr.setSeed(seed);
     }
 
     @Override
@@ -147,43 +187,66 @@ public class QueueStation implements Simulatable {
         
         return outputStation;
     }
-    
-    private void startNextJob() {
-        // get pending job from queue
-        Job nextJob = this.jobQueue.poll();
-        
-        if (nextJob != null) {
-            // determine the delta time from now to complete the job 
-            // and notify observers of the pending simulation event
-            double serviceTime = this.serviceTimeGenr.nextVariate();
-            
-            notifyObservers(serviceTime);
 
-            // process the job until event completion time
-            this.activeServers.add(nextJob);
-            
-            System.out.printf("  " + this.name + ": Started job. Done in %.3f. " 
-                + this.activeServers.size() + " of " + this.numServers
-                + " server(s) busy.%n", serviceTime);
-        }
-    }
-    
-    private void notifyObservers(double eventTime) {
-        SimEvent simEvent = new SimEvent(this, eventTime);
-        
-        for (EventObserver observer : this.observers) {
-            observer.notify(simEvent);
-        }
-    }
-    
     /**
      * Internal data class to capture probability when output may nondeterministically
      * go to a different next place.
      */
+
+
+    private void startNextJob(double simTime) {
+        // get pending job from queue
+        Job nextJob = this.jobQueue.poll();
+
+        if (nextJob != null) {
+            // determine the delta time from now to complete the job
+            // and notify observers of the pending simulation event
+            nextJob.setStartTime(simTime);
+            double serviceTime;
+            if(!this.useGamma)
+            {
+                serviceTime = this.serviceTimeGenr.nextVariate();
+            }else
+            {
+                serviceTime = this.gammaServiceTimeGenr.nextVariate();
+            }
+            nextJob.setEndTime(simTime + serviceTime);
+            notifyObservers(serviceTime);
+
+            // process the job until event completion time
+            this.activeServers.add(nextJob);
+
+            System.out.printf("  " + this.name + ": Started job at %f. Done in %.3f. "
+                + this.activeServers.size() + " of " + this.numServers
+                + " server(s) busy.%n", simTime, serviceTime);
+        }
+    }
+
+    private void notifyObservers(double eventTime) {
+        SimEvent simEvent = new SimEvent(this, eventTime);
+
+        for (EventObserver observer : this.observers) {
+            observer.notify(simEvent);
+        }
+    }
+
+    public LinkedList<Job> getFinishedJobs() { return this.finishedJobs; }
+
+    public void printJobResults() {
+        if(this.finishedJobs.size() > 0)
+        System.out.println(this.name + " Finished Jobs");
+        for(Job j : this.finishedJobs)
+        {
+            System.out.printf("\tArrival time: %f, Start time: %f, End time: %f%n", j.getArrivalTime(), j.getStartTime(), j.getEndTime());
+        }
+    }
+
     private class OutputPair implements Comparable<OutputPair> {
+
         private QueueStation station;
+
         private Double probability;
-        
+
         public OutputPair(QueueStation station, double probability) {
             this.station = station;
             this.probability = probability;
@@ -193,18 +256,18 @@ public class QueueStation implements Simulatable {
         public int compareTo(OutputPair op) {
             if (this.probability >= op.getProbability())
                 return 1;
-            
+
             else
                 return -1;
         }
-        
+
         public Double getProbability() {
             return this.probability;
         }
-        
+
         public QueueStation getStation() {
             return this.station;
         }
-            
+
     }
 }

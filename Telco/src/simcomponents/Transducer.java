@@ -25,6 +25,9 @@
  */
 package simcomponents;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Receives all events leaving the system and acts as a terminating queue station.
  * Can be used to log such events and denote completion time. Might also be used
@@ -45,15 +48,19 @@ public class Transducer extends QueueStation {
     {
         super("Transducer", -1, 0.0);
     }
+
     
     @Override
-    public void addJob(Job job) {
-        jobCount++;
+    public void addJob(Job job, double simTime) {
+        job.setArrivalTime(simTime);
+        job.setStartTime(simTime);
+        job.setEndTime(simTime);
+        this.finishedJobs.push(job);
         System.out.printf("  Transducer: Completed " + jobCount + " jobs\n");
     }
     
     @Override
-    public void execute() {
+    public void execute(double simTime) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

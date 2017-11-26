@@ -27,6 +27,9 @@ package simcomponents;
 
 //import com.sun.corba.se.spi.transport.TransportDefault;
 
+import java.util.Collections;
+import java.util.LinkedList;
+
 /**
  * A simulation system providing an experimental frame for a simulation engine and
  * simulatable components. The domain of this experimental frame is a queueing network
@@ -51,7 +54,7 @@ public class BasicSimSystem {
         
 
         // number of 'days' to work
-        int days = 20;
+        int days = 1;
         double endSimTime = 8 * days;       // max hours to simulate
         // the defined unit time here is an hour
         double jobArrivalRate = 1.25;    // average jobs per hour
@@ -111,7 +114,7 @@ public class BasicSimSystem {
         QueueStation softwareManagers = new QueueStation("Software_Managers", softwareManagerServers, softwareManagerServiceRate);
         QueueStation hardwareTechnicians = new QueueStation("Hardware_Technicians", hardwareTechnicianServers, hardwareTechnicianServiceRate);
         QueueStation hardwareManagers = new QueueStation("Hardware_Managers", hardwareManagerServers, hardwareManagerServiceRate);
-        QueueStation hardwareRepair = new QueueStation("Hardware_Repair", repairTechnicianServers, repairTechnicianServiceRate);
+        QueueStation hardwareRepair = new QueueStation("Hardware_Repair", repairTechnicianServers, repairTechnicianServiceRate, true);
         // Get Transducers
         Transducer transd = new Transducer();
         Transducer repairTransd = new Transducer("Hardware_Repair_Transducer");
@@ -166,6 +169,18 @@ public class BasicSimSystem {
         genr.initialize();
         engine.simulate();
         System.out.println("\nSIMULATION COMPLETE");
+        engine.printResults();
+
+        callCenter.printJobResults();
+        softwareTechnicians.printJobResults();
+        softwareManagers.printJobResults();
+        hardwareTechnicians.printJobResults();
+        hardwareManagers.printJobResults();
+        hardwareRepair.printJobResults();
+
+        transd.printJobResults();
+        repairTransd.printJobResults();
+        failRepairTransd.printJobResults();
         
     }
     

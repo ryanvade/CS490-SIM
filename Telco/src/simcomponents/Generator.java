@@ -41,6 +41,7 @@ public class Generator implements Simulatable {
     private final LinkedList<SimEvent> arrivalEvents;
     private final ArrayList<EventObserver> observers;
     private QueueStation queueStation;
+    private int eventCount = 0;
     
     /**
      * Constructor. Calculates all arrivals *in one unit time* using a Poisson
@@ -65,14 +66,16 @@ public class Generator implements Simulatable {
      * Sends the first event in the queue to the attached queue station.
      */
     @Override
-    public void execute() {
+    public void execute(double simTime) {
         // provide the queue station with its input
         if (this.queueStation == null || this.arrivalEvents.isEmpty()) {
             System.out.printf("  Generator: No jobs to send.%n");
         } 
         else {
-            this.queueStation.addJob(new Job());
-            System.out.printf("  Generator: Sent job to " + this.queueStation.getName() + ".%n");
+            Job j = new Job();
+            //j.setStartTime(simTime);
+            this.queueStation.addJob(j, simTime);
+           // System.out.printf("  Generator: Sent job " + this.jobCount + " to " + this.queueStation.getName() + ".%n");
         }
     }
     
@@ -94,6 +97,7 @@ public class Generator implements Simulatable {
         for (int a=0; a < numArrivalsWithinUnitTime; a++) {
             arrivalTime = this.arrivalTimeGenr.nextVariate();
             currentTime += arrivalTime;
+            this.eventCount++;
             SimEvent newEvent = new SimEvent(this, currentTime);
             this.arrivalEvents.add(newEvent);
             notifyObservers(newEvent);

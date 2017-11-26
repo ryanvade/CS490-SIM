@@ -34,8 +34,7 @@ package simcomponents;
  */
 public class SimEvent implements Comparable<SimEvent> {
     private final Simulatable simulatable;
-    private Double time
-;    
+    private Double time;
     /**
      * Creates a SimEvent instance.
      * 
@@ -86,5 +85,6 @@ public class SimEvent implements Comparable<SimEvent> {
     public void setEventTime(Double eventTime) {
         this.time = eventTime;
     }
+
     
 }
