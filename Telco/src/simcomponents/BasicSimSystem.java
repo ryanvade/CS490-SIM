@@ -55,7 +55,8 @@ public class BasicSimSystem {
 
         // number of 'days' to work
         int days = 1;
-        double endSimTime = 8 * days;       // max hours to simulate
+        int hoursInDay = 8;
+        double endSimTime = hoursInDay * days;       // max hours to simulate
         // the defined unit time here is an hour
         double jobArrivalRate = 1.25;    // average jobs per hour
         jobArrivalRate = jobArrivalRate + (jobArrivalRate * 8);
@@ -71,12 +72,12 @@ public class BasicSimSystem {
         int hardwareManagerServers = 1;
         int repairTechnicianServers = 2;
 
-        double callCenterServiceRate = 3.0 / 60.0;
-        double softwareTechnicianServiceRate = 20.0 / 60.0 ;
-        double softwareManagerServiceRate = 45.0 / 60.0 ;
-        double hardwareTechnicianServiceRate = 40.0 / 60.0;
-        double hardwareManagerServiceRate = 60.0 / 60.0;
-        double repairTechnicianServiceRate = 0.8;
+        double callCenterServiceRate = (3.0 / 60.0) * hoursInDay;
+        double softwareTechnicianServiceRate = (20.0 / 60.0) * hoursInDay ;
+        double softwareManagerServiceRate = (45.0 / 60.0) * hoursInDay;
+        double hardwareTechnicianServiceRate = (40.0 / 60.0)* hoursInDay;
+        double hardwareManagerServiceRate = (60.0 / 60.0)* hoursInDay;
+        double repairTechnicianServiceRate = (0.8) * hoursInDay;
 
         
         if (args.length > 2) {

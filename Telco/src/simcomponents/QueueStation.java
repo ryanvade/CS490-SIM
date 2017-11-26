@@ -124,7 +124,7 @@ public class QueueStation implements Simulatable {
         if(finishedJobs != null)
         {
             this.activeServers.remove(this.activeServers.indexOf(finishedJob));
-            this.finishedJobs.push(finishedJob);
+            this.finishedJobs.push(finishedJob.copy());
 
             // send job to selected output station
             QueueStation outputStation = selectOutputStation();

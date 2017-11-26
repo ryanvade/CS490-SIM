@@ -43,6 +43,15 @@ public class Job {
         this.arrivalTime = Double.NEGATIVE_INFINITY;
         this.ID = -1;
     }
+
+    public Job copy()
+    {
+        Job j = new Job();
+        j.setArrivalTime(this.arrivalTime);
+        j.setStartTime(this.startTime);
+        j.setEndTime(this.endTime);
+        return j;
+    }
     
     public double getEndTime() {
         return this.endTime;
@@ -58,9 +67,7 @@ public class Job {
         this.endTime = end;
     }
     
-    public void setStartTime(double start) {
-        if(this.startTime == Double.NEGATIVE_INFINITY) this.startTime = start;
-    }
+    public void setStartTime(double start) { this.startTime = start; }
 
     public void setArrivalTime(double arrival) { this.arrivalTime = arrival;}
 
