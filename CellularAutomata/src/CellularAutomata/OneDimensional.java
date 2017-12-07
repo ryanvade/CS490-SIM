@@ -5,7 +5,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class Main {
+/*
+ * One Dimensional CA
+ *
+ * Runs a One Dimensional CA simulation given user input
+ *
+ * By Ryan Owens
+ */
+public class OneDimensional {
     public static void main(String[] args) {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         // ask user for rule to use

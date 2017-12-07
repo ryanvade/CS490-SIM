@@ -2,6 +2,13 @@ package OneDimensionalCA;
 
 import java.util.Vector;
 
+/*
+ * Network
+ *
+ * Represents a 1D network of CA cells
+ *
+ * By Ryan Owens
+ */
 public class Network {
     int initialCellCount = 100;
     Vector<Cell> cells;

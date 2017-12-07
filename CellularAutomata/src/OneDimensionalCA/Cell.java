@@ -1,5 +1,13 @@
 package OneDimensionalCA;
-
+/*
+ * Cell
+ *
+ * Represents a CA Cell
+ *
+ * Has a State boolean and a Rule array to follow
+ *
+ * By Ryan Owens
+ */
 public class Cell {
     boolean state;
     int rule;
@@ -16,12 +24,7 @@ public class Cell {
         }
         this.ruleArr = new boolean[ruleString.length()];
         for(int i = 0; i < ruleString.length(); i++) {
-            if(ruleString.charAt(i) == '1') {
-                ruleArr[ruleString.length() - i - 1] = true;
-            }else
-            {
-                ruleArr[ruleString.length() - i - 1] = false;
-            }
+            ruleArr[ruleString.length() - i - 1] = ruleString.charAt(i) == '1';
         }
     }
 
